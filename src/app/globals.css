@@ -224,6 +224,15 @@ textarea {
   padding: 28px;
 }
 
+.map-surface {
+  width: 100%;
+  min-height: 420px;
+  max-height: 420px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
 hr.soft {
   border: none;
   border-top: 1px solid #e7ebf3;

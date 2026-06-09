@@ -41,6 +41,19 @@ export interface WaterBodyPassport {
   invertebrates?: string;
 }
 
+export type Position = [number, number];
+
+export type GeoJSONPolygon = {
+  type: 'Polygon';
+  coordinates: Position[][];
+};
+
+export type GeoJSONFeature = {
+  type: 'Feature';
+  geometry: GeoJSONPolygon;
+  properties?: Record<string, unknown>;
+};
+
 export interface WaterBody {
   id: string;
   name: string;
@@ -48,7 +61,7 @@ export interface WaterBody {
   locationDesc?: string | null;
   latitude?: number | null;
   longitude?: number | null;
-  boundaries?: unknown;
+  boundaries?: GeoJSONPolygon | null;
   cadastralNumber?: string | null;
   passport?: WaterBodyPassport | null;
   measurements?: Measurement[];

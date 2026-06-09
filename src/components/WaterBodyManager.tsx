@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 import { WaterBody, WaterBodyPassport } from '@/types';
 import Link from 'next/link';
+import { WaterBodyPolygonEditor } from './WaterBodyPolygonEditor';
+import * as turf from '@turf/turf';
 
 type WaterBodyForm = {
   name: string;
@@ -12,6 +14,7 @@ type WaterBodyForm = {
   latitude: string;
   longitude: string;
   cadastralNumber: string;
+  boundaries?: any;
   passport: {
     area: string;
     maxDepth: string;
@@ -66,6 +69,8 @@ export function WaterBodyManager() {
   const [form, setForm] = useState<WaterBodyForm>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
 
+  const [boundaries, setBoundaries] = useState<any>(null);
+
   async function load() {
     try {
       setLoading(true);
@@ -90,14 +95,22 @@ export function WaterBodyManager() {
         return;
       }
 
+      const polygon = turf.feature(boundaries);
+      const center = turf.pointOnFeature(polygon); 
+      const [lng, lat] = center.geometry.coordinates;
+
+      const area = turf.area(polygon);
+      console.log(area);
+
       const payload = {
         name: form.name,
         district: form.district.trim() || undefined,
         locationDesc: form.locationDesc.trim() || undefined,
-        latitude: toNumber(form.latitude),
-        longitude: toNumber(form.longitude),
+        latitude: Number(lat.toFixed(6)) || undefined,
+        longitude: Number(lng.toFixed(6)) || undefined,
         cadastralNumber: form.cadastralNumber.trim() || undefined,
         passport: buildPassport(form),
+        boundaries: boundaries, 
       };
 
       if (editingId) {
@@ -127,6 +140,7 @@ export function WaterBodyManager() {
 
   function startEdit(item: WaterBody) {
     setEditingId(item.id);
+    setBoundaries(item.boundaries ?? null);
     setForm({
       name: item.name || '',
       district: item.district || '',
@@ -158,6 +172,11 @@ export function WaterBodyManager() {
           <input placeholder="Longitude" value={form.longitude} onChange={(e) => setForm({ ...form, longitude: e.target.value })} />
           <input placeholder="Cadastral" value={form.cadastralNumber} onChange={(e) => setForm({ ...form, cadastralNumber: e.target.value })} />
         </div>
+        <WaterBodyPolygonEditor
+            value={boundaries}
+            onChange={setBoundaries}
+            items={items}
+          />
 
         <button className="btn" onClick={submit}>
           {editingId ? 'Save' : 'Create'}
